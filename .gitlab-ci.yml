@@ -150,8 +150,8 @@ notify-success:
           print('\n'.join(changed))
       PYEOF
       )
-      if [ "$CI_PIPELINE_SOURCE" = "schedule" ] && [ -z "$REASON" ]; then
-        echo "All layers cached on scheduled run — nothing changed, skipping notification"
+      if [ -z "$REASON" ]; then
+        echo "All layers cached — nothing changed, skipping notification"
         exit 0
       fi
       MSG=$(printf '%s:%s' "$CI_REGISTRY_IMAGE" "$CI_COMMIT_SHORT_SHA")
