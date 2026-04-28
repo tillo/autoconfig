@@ -1,8 +1,7 @@
-FROM gitlab.mdapi.ch/mdapi/dependency_proxy/containers/alpine
+FROM gitlab.mdapi.ch/mdapi/dependency_proxy/containers/python:alpine
 
 ENV PACKAGES="\
   bash \
-  python3 \
 "
 
 RUN apk add --no-cache $PACKAGES
@@ -10,4 +9,4 @@ RUN apk add --no-cache $PACKAGES
 COPY server.py /srv/server.py
 COPY autoconfig.xml /srv/autoconfig.xml
 
-CMD ["/srv/server.py"]
+CMD ["python3", "/srv/server.py"]
