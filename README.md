@@ -1,5 +1,13 @@
 # docker-email-autoconfig
 
+> **Provenance.** This is a maintained fork of
+> [damianmoore/docker-email-autoconfig](https://github.com/damianmoore/docker-email-autoconfig)
+> (upstream last pushed February 2018). MDAPI carries Alpine + Python base-image
+> bumps, IMAPS-by-default in the autoconfig.xml template, and a daily CVE-scan
+> CI pipeline. Image at `ghcr.io/MDAPI-Repos/autoconfig` (sources at
+> [github.com/MDAPI-Repos/autoconfig](https://github.com/MDAPI-Repos/autoconfig)).
+
+
 When adding email accounts to a client like Thunderbird, a HTTP query is made to a subdomain of the email addres to see if there is a description for how to connect for sending and receiving. This server hosts the configuration file and can can do so for multiple domains at a time.
 
 More information about the email autoconfiguration format and how it is accessed can be read here: https://developer.mozilla.org/en-US/docs/Mozilla/Thunderbird/Autoconfiguration
