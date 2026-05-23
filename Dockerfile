@@ -1,4 +1,5 @@
-FROM gitlab.mdapi.ch/mdapi/dependency_proxy/containers/python:alpine
+ARG REGISTRY=
+FROM ${REGISTRY}python:alpine
 
 ENV PACKAGES="\
   bash \
