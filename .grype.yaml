@@ -1,5 +1,2 @@
 ignore:
-  - vulnerability: CVE-2025-13836  # no fix available upstream; monitoring
-  - vulnerability: CVE-2026-3298  # no fix available upstream; monitoring
-  - vulnerability: CVE-2026-4786  # no fix available upstream; monitoring
-  - vulnerability: CVE-2026-6100  # no fix available upstream; monitoring
+  []
