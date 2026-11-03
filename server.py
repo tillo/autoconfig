@@ -16,15 +16,24 @@ class MyServer(BaseHTTPRequestHandler):
         self.wfile.close()
 
     def do_GET(self):
-        self.send_response(200)
         if self.path.startswith('/mail/config-v1.1.xml'):
+            # The domain comes from the Host header: without one there is no
+            # document to build, so refuse before any status line goes out.
+            host = self.headers['Host']
+            if not host:
+                self.send_response(400)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b'Bad request: no Host header\r\n')
+                return
             path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'autoconfig.xml')
             with open(path) as f:
                 template = f.read()
+            self.send_response(200)
             self.send_header('Content-type', 'text/xml')
             self.end_headers()
             context = {
-                'hostname':             self.headers['Host'].replace('autoconfig.', ''),
+                'hostname':             host.replace('autoconfig.', ''),
                 'display_name':         os.environ.get('DISPLAY_NAME', ''),
                 'display_short_name':   os.environ.get('DISPLAY_SHORT_NAME', ''),
                 'mail_hostname':        os.environ.get('MAIL_HOSTNAME', ''),
@@ -32,6 +41,7 @@ class MyServer(BaseHTTPRequestHandler):
             content = template.format(**{k: escape(v, {'"': '&quot;'}) for k, v in context.items()})
             self.wfile.write(content.encode('utf-8'))
         else:
+            self.send_response(200)
             self.send_header('Content-type', 'text/plain')
             self.end_headers()
             self.wfile.write('Autoconfig server (https://developer.mozilla.org/en-US/docs/Mozilla/Thunderbird/Autoconfiguration)\r\n'.encode('utf-8'))

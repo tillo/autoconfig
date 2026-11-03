@@ -47,7 +47,8 @@ class Autoconfig(unittest.TestCase):
     def get(self, path, host="autoconfig.example.org"):
         conn = http.client.HTTPConnection("127.0.0.1", self.httpd.server_address[1], timeout=5)
         conn.putrequest("GET", path, skip_host=True)
-        conn.putheader("Host", host)
+        if host is not None:
+            conn.putheader("Host", host)
         conn.endheaders()
         resp = conn.getresponse()
         body = resp.read()
@@ -81,6 +82,14 @@ class Autoconfig(unittest.TestCase):
         self.assertEqual(p.findtext("domain"), 'ex"<x/>&.org')
         self.assertIsNone(p.find("domain/x"))
         self.assertEqual(p.findtext("displayName"), "Smith & Sons <mail>")
+
+    def test_a_request_without_a_host_gets_400_not_an_empty_200(self):
+        for host in (None, ""):
+            with self.subTest(host=host):
+                status, ctype, body = self.get(
+                    "/mail/config-v1.1.xml?emailaddress=user%40example.org", host)
+                self.assertEqual((status, ctype), (400, "text/plain"))
+                self.assertIn(b"Host", body)
 
     def test_any_other_path_answers_the_plain_text_banner(self):
         status, ctype, body = self.get("/")
