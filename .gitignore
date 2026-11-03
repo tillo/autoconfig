@@ -13,3 +13,10 @@ id_ecdsa*
 *.p12
 *.tsig
 .netrc
+
+# local test tooling (infra-5tpra)
+.venv/
+.metrics/
+target/
+.coverage
+__pycache__/
