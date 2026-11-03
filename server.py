@@ -2,6 +2,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
 import time
+from xml.sax.saxutils import escape
 
 
 hostName = ""
@@ -28,7 +29,7 @@ class MyServer(BaseHTTPRequestHandler):
                 'display_short_name':   os.environ.get('DISPLAY_SHORT_NAME', ''),
                 'mail_hostname':        os.environ.get('MAIL_HOSTNAME', ''),
             }
-            content = template.format(**context)
+            content = template.format(**{k: escape(v, {'"': '&quot;'}) for k, v in context.items()})
             self.wfile.write(content.encode('utf-8'))
         else:
             self.send_header('Content-type', 'text/plain')
