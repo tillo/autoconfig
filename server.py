@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import os
 import time
 from xml.sax.saxutils import escape
@@ -47,8 +47,12 @@ class MyServer(BaseHTTPRequestHandler):
             self.wfile.write('Autoconfig server (https://developer.mozilla.org/en-US/docs/Mozilla/Thunderbird/Autoconfiguration)\r\n'.encode('utf-8'))
 
 
+def make_server(address):
+    return ThreadingHTTPServer(address, MyServer)
+
+
 def run():
-    myServer = HTTPServer((hostName, hostPort), MyServer)
+    myServer = make_server((hostName, hostPort))
     print(time.asctime(), "Server started - %s:%s" % (hostName, hostPort))
 
     try:

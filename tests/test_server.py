@@ -14,6 +14,7 @@ from __future__ import annotations
 import http.client
 import importlib.util
 import os
+import socket
 import threading
 import unittest
 import xml.etree.ElementTree as ET
@@ -35,7 +36,7 @@ class Autoconfig(unittest.TestCase):
         self.env.start()
         self.quiet = mock.patch.object(server.MyServer, "log_message")
         self.quiet.start()
-        self.httpd = server.HTTPServer(("127.0.0.1", 0), server.MyServer)
+        self.httpd = server.make_server(("127.0.0.1", 0))
         threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
 
     def tearDown(self):
@@ -90,6 +91,20 @@ class Autoconfig(unittest.TestCase):
                     "/mail/config-v1.1.xml?emailaddress=user%40example.org", host)
                 self.assertEqual((status, ctype), (400, "text/plain"))
                 self.assertIn(b"Host", body)
+
+    def test_a_stalled_client_does_not_block_the_next_one(self):
+        # A client that connects and never finishes its request line holds the
+        # handler in readline(); one such client must not stall every mail client.
+        # Closed inside the test, not in a cleanup: tearDown's shutdown() would
+        # otherwise wait on a serving thread that is still stuck on it.
+        with socket.create_connection(self.httpd.server_address, timeout=1) as stalled:
+            stalled.sendall(b"GET /mail/config-v1.1.xml HTTP/1.1")
+            conn = http.client.HTTPConnection("127.0.0.1", self.httpd.server_address[1], timeout=1)
+            try:
+                conn.request("GET", "/", headers={"Host": "autoconfig.example.org"})
+                self.assertEqual(conn.getresponse().status, 200)
+            finally:
+                conn.close()
 
     def test_any_other_path_answers_the_plain_text_banner(self):
         status, ctype, body = self.get("/")
