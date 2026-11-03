@@ -10,9 +10,22 @@ include:
     ref: main
 
 stages:
+  - test
   - build
   - scan
   - notify
+
+# The config-v1.1.xml a mail client reads (tests/, stdlib only, infra-5tpra).
+# `rules:` so MR pipelines run it too: a job without them is absent there.
+test:
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/python:3-alpine
+  stage: test
+  tags:
+    - mdapi
+  rules:
+    - when: on_success
+  script:
+    - python3 -m unittest discover -s tests -v
 
 buildkit:
   image:
