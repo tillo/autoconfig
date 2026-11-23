@@ -1,5 +1,8 @@
 include:
   - project: mdapi/ci-templates
+    file: /dast.yml
+    ref: main
+  - project: mdapi/ci-templates
     file: /sast.yml
     ref: main
   - project: mdapi/ci-templates
@@ -19,6 +22,7 @@ stages:
   - test
   - build
   - scan
+  - web-scan
   - notify
   - code-scan
 
@@ -155,3 +159,22 @@ sast:
 
 sca-source:
   extends: .osv-source
+
+# Passive DAST of the image this pipeline built (ci-templates /dast.yml,
+# infra-7rog.31.16): ZAP's baseline spider, no attacks, non-blocking; the
+# DefectDojo sync imports zap-report.xml from this job name.
+# The mail-client autoconfig server; it needs no dependency.
+dast-baseline:
+  extends: .zap-baseline
+  needs: [buildkit]
+  # The image this pipeline built, on zot: mdapi/<project> on the default
+  # branch, mdapi-dev/<project> elsewhere (ci-templates .zot-built-image).
+  rules: !reference [.zot-built-image, rules]
+  services:
+    - name: ${BUILT_IMAGE}
+      alias: app
+  variables:
+    DAST_TARGET: http://app:80/
+    DISPLAY_NAME: 'DAST'
+    DISPLAY_SHORT_NAME: 'DAST'
+    MAIL_HOSTNAME: 'mail.example.invalid'
